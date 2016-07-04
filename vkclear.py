@@ -84,13 +84,33 @@ class MainWindow():
         # Обновление всего GUI
         self.root.update()
 
-    def confirm(self):
-        #conformroot = tk.Tk()
-        #confirmwindow = ConfirmWindow(conformroot, u'You are sure?')
+    def confirm(self, message):
+        # Вызывается для подтверждения удаления. Проверяет авторизацию и отрисовывает окно подтверждения
+        def accept():
+            # Функция вызывается если пользователь нажал кнопку "Да"
+            confirmed = True
+            confirmroot.destroy()
+        def decline():
+            # Функция вызывается если пользователь нажал кнопку "Нет" или закрыл окно
+            confirmed = False
+            confirmroot.destroy()
 
+        confirmed = False
+        confirmroot = tk.Tk()
+        confirmroot.title(u'Подтвердите выбор') # Название приложения
+        confirmroot.geometry('410x110') # ширина=200, высота=100
+        confirmroot.resizable(False, False) # размер окна может быть изменён
+        confirmroot.protocol('WM_DELETE_WINDOW', decline) # обработчик закрытия окна
+        tk.Label(confirmroot, text='    ').grid(row=0, column=0, columnspan=5)
+        tk.Label(confirmroot, text='    ').grid(row=0, column=3, columnspan=5)
+        tk.Label(confirmroot, text=u'Вы действительно хотите удалить все{}?'.format(message), fg='#2B587A', font='tahoma 10').grid(row=1, column=1)
+        tk.Label(confirmroot, text='    ').grid(row=2, column=0)
+        tk.Button(confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Да", command=accept).grid(row=3, column=1, sticky='w')
+        tk.Button(confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Нет", command=decline).grid(row=3, column=1, sticky='e')
+        tk.Label(confirmroot, text='    ').grid(row=4, column=0)
+        confirmroot.mainloop()
 
-
-        if self.is_authorized:
+        if self.is_authorized and confirmed:
             return True
         else:
             self.status = u'Прежде авторизуйтесь!'
@@ -120,7 +140,7 @@ class MainWindow():
 
     def delete_wallposts(self):
         # Первым запросом узноаум кол-во постов, а после проходимся по каждому и удаляем
-        if self.confirm():
+        if self.confirm(' посты'):
             count = self.vkapi.wall.get(count=1)[0]
             for i in range(count):
                 time.sleep(0.333)
@@ -132,7 +152,7 @@ class MainWindow():
 
     def delete_friends(self):
         # Загружаем идентификаторы всех друзей и в цикле удаляем каждого
-        if self.confirm():
+        if self.confirm('х друзей'):
             friends_ids = self.vkapi.friends.get()
             count = len(friends_ids)
             for i in range(count):
@@ -142,15 +162,21 @@ class MainWindow():
                 self.draw_statusbar()
 
     def delete_messages(self):
-        #
-        if self.confirm():
-            # Пока эта опция не работает
-            self.status = u'Эта опция пока не работает'
-            self.draw_statusbar()
+        # Удаляет все диалоги
+        if self.confirm(' диалоги'):
+            #
+            count = self.vkapi.messages.getDialogs(count=1)[0]
+            for i in range(count):
+                time.sleep(0.333)
+                uid = self.vkapi.messages.getDialogs(offset=i, count=1)[1]['uid']
+                time.sleep(0.333)
+                self.vkapi.messages.deleteDialog(user_id=uid)
+                self.status = u'Удалено диалогов: {0}/{1}'.format(i+1, count)
+                self.draw_statusbar()
 
     def delete_groups(self):
         # Узнаем количество групп и пабликов, а потом достаем идентификатор каждого и покидаем его
-        if self.confirm():
+        if self.confirm(' группы'):
             count = self.vkapi.groups.get(count=1, filter='groups, publics')[0]
             for i in range(count):
                 time.sleep(0.333)
@@ -162,7 +188,7 @@ class MainWindow():
 
     def delete_events(self):
         # Узнаем количество ивентов, а потом достаем идентификатор каждого и покидаем его
-        if self.confirm():
+        if self.confirm(' ивенты'):
             count = self.vkapi.groups.get(count=1, filter='events')[0]
             for i in range(count):
                 time.sleep(0.333)
@@ -175,7 +201,7 @@ class MainWindow():
     def delete_photos(self):
         # Удаляет все фотографии.
         # Фото, добавленное пользователем - поальбомно, а фото сохраненные, профиля и стенки - поэлементно
-        if self.confirm():
+        if self.confirm(' фото'):
             # Достаем id всех альбомов пользователя и удаляем их
             time.sleep(0.333)
             albums = self.vkapi.photos.getAlbums()
@@ -200,7 +226,7 @@ class MainWindow():
                 self.draw_statusbar()
 
     def delete_videos(self):
-        if self.confirm():
+        if self.confirm(' видео'):
             count = self.vkapi.video.get(count=1)[0]
             for i in range(count):
                 time.sleep(0.333)
@@ -212,7 +238,7 @@ class MainWindow():
 
     def delete_audios(self):
         # Запрашивает инфу о всех аудио и удаляем их. Если их больше 6000, то повторяем
-        if self.confirm():
+        if self.confirm(' аудио'):
             all_audios = self.vkapi.audio.get()
             count = len(all_audios)
             for i in range(count):
@@ -227,7 +253,7 @@ class MainWindow():
 
     def delete_bookmarks(self):
         # Удаляет всех пользователей и ссылки, добавленных в закладки
-        if self.confirm():
+        if self.confirm(' закладки'):
             count = self.vkapi.fave.getUsers()[0]
             for i in range(count):
                 time.sleep(0.333)
@@ -249,39 +275,6 @@ class MainWindow():
         # Пока эта опция не работает
         self.status = u'Эта опция пока не работает'
         self.draw_statusbar()
-
-class ConfirmWindow():
-    '''
-    Класс для окна подтвеждения удаления
-    '''
-    def __init__(self, root, message):
-        self.root = root
-        self.message = message
-        self.root.title(u'Подтвердите выбор') # Название приложения
-        self.root.geometry('410x110') # ширина=200, высота=100
-        #self.root.configure(background='grey') # Цвет фона
-        self.root.resizable(False, False) # размер окна может быть изменён
-        self.root.protocol('WM_DELETE_WINDOW', self.get_answer) # обработчик закрытия окна
-        self.answer = False
-        tk.Label(self.root, text='    ').grid(row=0, column=0, columnspan=5)
-        tk.Label(self.root, text='    ').grid(row=0, column=3, columnspan=5)
-        tk.Label(self.root, text=u'Вы действительно хотите удалить все {}?'.format(self.message), fg='#2B587A', font='tahoma 10').grid(row=1, column=1)
-        tk.Label(self.root, text='    ').grid(row=2, column=0)
-        tk.Button(self.root, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Да", command=self.accept).grid(row=3, column=1, sticky='w')
-        tk.Button(self.root, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Нет", command=self.decline).grid(row=3, column=1, sticky='e')
-        tk.Label(self.root, text='    ').grid(row=4, column=0)
-
-    def accept(self):
-        self.answer = True
-        #self.get_answer()
-
-    def decline(self):
-        self.answer = False
-        #self.get_answer()
-
-    def get_answer(self):
-        self.root.destroy()
-        return self.answer
 
 
 # Номер приложения в ВК, с помощью которого происходит взаимодействие с VK API
