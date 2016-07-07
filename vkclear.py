@@ -88,34 +88,37 @@ class MainWindow():
         # Вызывается для подтверждения удаления. Проверяет авторизацию и отрисовывает окно подтверждения
         def accept():
             # Функция вызывается если пользователь нажал кнопку "Да"
-            confirmed = True
-            confirmroot.destroy()
+            self.confirmed = True
+            self.confirmroot.destroy()
+
         def decline():
             # Функция вызывается если пользователь нажал кнопку "Нет" или закрыл окно
-            confirmed = False
-            confirmroot.destroy()
+            self.confirmed = False
+            self.confirmroot.destroy()
 
-        confirmed = False
-        confirmroot = tk.Tk()
-        confirmroot.title(u'Подтвердите выбор') # Название приложения
-        confirmroot.geometry('410x110') # ширина=200, высота=100
-        confirmroot.resizable(False, False) # размер окна может быть изменён
-        confirmroot.protocol('WM_DELETE_WINDOW', decline) # обработчик закрытия окна
-        tk.Label(confirmroot, text='    ').grid(row=0, column=0, columnspan=5)
-        tk.Label(confirmroot, text='    ').grid(row=0, column=3, columnspan=5)
-        tk.Label(confirmroot, text=u'Вы действительно хотите удалить все{}?'.format(message), fg='#2B587A', font='tahoma 10').grid(row=1, column=1)
-        tk.Label(confirmroot, text='    ').grid(row=2, column=0)
-        tk.Button(confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Да", command=accept).grid(row=3, column=1, sticky='w')
-        tk.Button(confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Нет", command=decline).grid(row=3, column=1, sticky='e')
-        tk.Label(confirmroot, text='    ').grid(row=4, column=0)
-        confirmroot.mainloop()
+        def create_confirm_window():
+            self.confirmroot = tk.Toplevel()
+            self.confirmroot.title(u'Подтвердите выбор') # Название приложения
+            self.confirmroot.geometry('410x110') # ширина=200, высота=100
+            self.confirmroot.resizable(False, False) # размер окна может быть изменён
+            self.confirmroot.protocol('WM_DELETE_WINDOW', decline) # обработчик закрытия окна
+            tk.Label(self.confirmroot, text='    ').grid(row=0, column=0, columnspan=5)
+            tk.Label(self.confirmroot, text='    ').grid(row=0, column=3, columnspan=5)
+            tk.Label(self.confirmroot, text=u'Вы действительно хотите удалить все{}?'.format(message), fg='#2B587A', font='tahoma 10').grid(row=1, column=1)
+            tk.Label(self.confirmroot, text='    ').grid(row=2, column=0)
+            tk.Button(self.confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Да", command=accept).grid(row=3, column=1, sticky='w')
+            tk.Button(self.confirmroot, font='tahoma 10', bg='#5B7FA6', fg='white', text=u"Нет", command=decline).grid(row=3, column=1, sticky='e')
+            tk.Label(self.confirmroot, text='    ').grid(row=4, column=0)
+            self.confirmroot.wait_window()
 
-        if self.is_authorized and confirmed:
-            return True
-        else:
+        self.confirmed = False
+        if not self.is_authorized:
             self.status = u'Прежде авторизуйтесь!'
             self.draw_statusbar()
             return False
+        else:
+            create_confirm_window()
+            return self.confirmed
 
     def submit(self):
         # Извлекаем логин и пароль в локальные переменные и пытаемся аутентифицироваться
@@ -146,7 +149,7 @@ class MainWindow():
                 time.sleep(0.333)
                 post_id = self.vkapi.wall.get(offset=i, count=1)[1]['id']
                 time.sleep(0.333)
-                self.vkapi.wall.delete(post_id)
+                self.vkapi.wall.delete(post_id=post_id)
                 self.status = u'Удалено постов со стенки: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -157,7 +160,7 @@ class MainWindow():
             count = len(friends_ids)
             for i in range(count):
                 time.sleep(0.333)
-                self.vkapi.friends.delete(friends_ids[i])
+                self.vkapi.friends.delete(user_id=friends_ids[i])
                 self.status = u'Удалено друзей: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -182,7 +185,7 @@ class MainWindow():
                 time.sleep(0.333)
                 current_id = self.vkapi.groups.get(count=1, offset=i, filter='groups, publics')[1]
                 time.sleep(0.333)
-                self.vkapi.groups.leave(current_id)
+                self.vkapi.groups.leave(group_id=current_id)
                 self.status = u'Удалено групп и пабликов: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -194,7 +197,7 @@ class MainWindow():
                 time.sleep(0.333)
                 current_id = self.vkapi.groups.get(count=1, offset=i, filter='events')[1]
                 time.sleep(0.333)
-                self.vkapi.groups.leave(current_id)
+                self.vkapi.groups.leave(group_id=current_id)
                 self.status = u'Удалено мероприятий: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -208,7 +211,7 @@ class MainWindow():
             count = len(albums)
             for i in range(count):
                 aid = albums[i]['aid']
-                self.vkapi.photos.deleteAlbum (aid)
+                self.vkapi.photos.deleteAlbum (album_id=aid)
                 self.status = u'Удалено альбомов: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
             # Достаем все фотки из альбомов 'wall', 'profile', 'saved'
@@ -221,7 +224,7 @@ class MainWindow():
             for i in range(count):
                 photo_id = photos[i]['pid']
                 time.sleep(0.333)
-                self.vkapi.photos.delete(photo_id)
+                self.vkapi.photos.delete(photo_id=photo_id)
                 self.status = u'Удалено фотографий: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -232,7 +235,7 @@ class MainWindow():
                 time.sleep(0.333)
                 video_id = self.vkapi.video.get(count=1, offset=i)[1]['vid']
                 time.sleep(0.333)
-                self.vkapi.video.delete(video_id)
+                self.vkapi.video.delete(video_id=video_id)
                 self.status = u'Удалено видео: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
@@ -244,7 +247,7 @@ class MainWindow():
             for i in range(count):
                 time.sleep(0.333)
                 audio_id = all_audios[i]['aid']
-                self.vkapi.audio.delete(audio_id)
+                self.vkapi.audio.delete(audio_id=audio_id)
                 self.status = u'Удалено аудиозаписей: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
             # Если аудиозаписей больше 6000, то придется удалять за несколько подходов
@@ -259,7 +262,7 @@ class MainWindow():
                 time.sleep(0.333)
                 user_id = self.vkapi.fave.getUsers(count=1, offset=i)[1]['uid']
                 time.sleep(0.333)
-                self.vkapi.fave.removeUser(user_id)
+                self.vkapi.fave.removeUser(user_id=user_id)
                 self.status = u'Удалено пользователей из закладок: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
             count = self.vkapi.fave.getLinks()[0]
@@ -267,7 +270,7 @@ class MainWindow():
                 time.sleep(0.333)
                 link_id = self.vkapi.fave.getLinks(count=1, offset=i)[1]['id']
                 time.sleep(0.333)
-                self.vkapi.fave.removeLink(link_id)
+                self.vkapi.fave.removeLink(link_id=link_id)
                 self.status = u'Удалено ссылок из закладок: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
 
