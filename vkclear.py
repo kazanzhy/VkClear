@@ -147,7 +147,7 @@ class MainWindow():
             count = self.vkapi.wall.get(count=1)[0]
             for i in range(count):
                 time.sleep(0.333)
-                post_id = self.vkapi.wall.get(offset=i, count=1)[1]['id']
+                post_id = self.vkapi.wall.get(offset=0, count=1)[1]['id']
                 time.sleep(0.333)
                 self.vkapi.wall.delete(post_id=post_id)
                 self.status = u'Удалено постов со стенки: {0}/{1}'.format(i+1, count)
@@ -183,7 +183,7 @@ class MainWindow():
             count = self.vkapi.groups.get(count=1, filter='groups, publics')[0]
             for i in range(count):
                 time.sleep(0.333)
-                current_id = self.vkapi.groups.get(count=1, offset=i, filter='groups, publics')[1]
+                current_id = self.vkapi.groups.get(count=1, offset=0, filter='groups, publics')[1]
                 time.sleep(0.333)
                 self.vkapi.groups.leave(group_id=current_id)
                 self.status = u'Удалено групп и пабликов: {0}/{1}'.format(i+1, count)
@@ -195,7 +195,7 @@ class MainWindow():
             count = self.vkapi.groups.get(count=1, filter='events')[0]
             for i in range(count):
                 time.sleep(0.333)
-                current_id = self.vkapi.groups.get(count=1, offset=i, filter='events')[1]
+                current_id = self.vkapi.groups.get(count=1, offset=0, filter='events')[1]
                 time.sleep(0.333)
                 self.vkapi.groups.leave(group_id=current_id)
                 self.status = u'Удалено мероприятий: {0}/{1}'.format(i+1, count)
@@ -233,7 +233,7 @@ class MainWindow():
             count = self.vkapi.video.get(count=1)[0]
             for i in range(count):
                 time.sleep(0.333)
-                video_id = self.vkapi.video.get(count=1, offset=i)[1]['vid']
+                video_id = self.vkapi.video.get(count=1, offset=0)[1]['vid']
                 time.sleep(0.333)
                 self.vkapi.video.delete(video_id=video_id)
                 self.status = u'Удалено видео: {0}/{1}'.format(i+1, count)
@@ -260,7 +260,7 @@ class MainWindow():
             count = self.vkapi.fave.getUsers()[0]
             for i in range(count):
                 time.sleep(0.333)
-                user_id = self.vkapi.fave.getUsers(count=1, offset=i)[1]['uid']
+                user_id = self.vkapi.fave.getUsers(count=1, offset=0)[1]['uid']
                 time.sleep(0.333)
                 self.vkapi.fave.removeUser(user_id=user_id)
                 self.status = u'Удалено пользователей из закладок: {0}/{1}'.format(i+1, count)
@@ -268,7 +268,7 @@ class MainWindow():
             count = self.vkapi.fave.getLinks()[0]
             for i in range(count):
                 time.sleep(0.333)
-                link_id = self.vkapi.fave.getLinks(count=1, offset=i)[1]['id']
+                link_id = self.vkapi.fave.getLinks(count=1, offset=0)[1]['id']
                 time.sleep(0.333)
                 self.vkapi.fave.removeLink(link_id=link_id)
                 self.status = u'Удалено ссылок из закладок: {0}/{1}'.format(i+1, count)

@@ -1,0 +1,8 @@
+from cx_Freeze import setup, Executable
+
+setup(
+    name = "VkClear",
+    version = "0.1",
+    description = "Автоматическая очистка аккаунта ВК",
+    executables = [Executable("vkclear.py")]
+)
