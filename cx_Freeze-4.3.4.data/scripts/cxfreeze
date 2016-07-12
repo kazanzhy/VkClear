@@ -1,4 +1,4 @@
-#!python
+#!c:\python\32-bit\3.4\python.exe
 
 from cx_Freeze import main
 
