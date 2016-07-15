@@ -171,7 +171,7 @@ class MainWindow():
             count = self.vkapi.messages.getDialogs(count=1)[0]
             for i in range(count):
                 time.sleep(0.333)
-                uid = self.vkapi.messages.getDialogs(offset=i, count=1)[1]['uid']
+                uid = self.vkapi.messages.getDialogs(offset=0, count=1)[1]['uid']
                 time.sleep(0.333)
                 self.vkapi.messages.deleteDialog(user_id=uid)
                 self.status = u'Удалено диалогов: {0}/{1}'.format(i+1, count)
@@ -230,10 +230,11 @@ class MainWindow():
 
     def delete_videos(self):
         if self.confirm(' видео'):
-            count = self.vkapi.video.get(count=1)[0]
+            count = self.vkapi.video.get()[0]
+            print(count)
             for i in range(count):
                 time.sleep(0.333)
-                video_id = self.vkapi.video.get(count=1, offset=0)[1]['vid']
+                video_id = self.vkapi.video.get()[1]['vid']
                 time.sleep(0.333)
                 self.vkapi.video.delete(video_id=video_id)
                 self.status = u'Удалено видео: {0}/{1}'.format(i+1, count)
@@ -247,7 +248,8 @@ class MainWindow():
             for i in range(count):
                 time.sleep(0.333)
                 audio_id = all_audios[i]['aid']
-                self.vkapi.audio.delete(audio_id=audio_id)
+                owner_id = all_audios[i]['owner_id']
+                self.vkapi.audio.delete(audio_id=audio_id, owner_id=owner_id)
                 self.status = u'Удалено аудиозаписей: {0}/{1}'.format(i+1, count)
                 self.draw_statusbar()
             # Если аудиозаписей больше 6000, то придется удалять за несколько подходов
