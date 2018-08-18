@@ -356,8 +356,8 @@ class MainWindow(tk.Tk):
             posts = _find_posts_with_comment()
             for post in posts:
                 _find_and_delete_comments_in_certain_post(*post)
-        self.status = u'Удалено всего комментариев: {}'.format(count_deleted_comments)
-        self.draw_statusbar()
+            self.status = u'Удалено всего комментариев: {}/{}'.format(count_deleted_comments, len(posts))
+            self.draw_statusbar()
 
 
 if __name__ == '__main__':
