@@ -4,10 +4,11 @@
 
 # Technologies
 * GUI: Tkinter
-* API: VK API
+* API: library vk_api (pip install vk_api)
 
 # How to start
-- git clone https://github.com/kazanzhy/VkClear.git
-- cd VkClear
-- pip3 install -r requirements.txt
-- python3 vkclear.py
+- git clone https://github.com/kazanzhy/VkClear.git or download
+- if download extract files
+- open Command Line (cmd)
+- type in cmd "/path/to/VkClear/venv/Scripts/activate"
+- in directory "VkClear" run in cmd "python vkclear.py"
